@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
 from homeassistant.components.calendar.const import DATA_COMPONENT
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE
@@ -104,3 +105,14 @@ async def test_umbenannte_quelle(hass: HomeAssistant, eingerichtet: MockConfigEn
     start = dt_util.now()
     termine = await entity.async_get_events(hass, start, start + timedelta(days=7))
     assert {t.summary for t in termine} == ERWARTET["A"]
+
+
+async def test_entfernte_quelle(
+    hass: HomeAssistant, eingerichtet: MockConfigEntry, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Ohne Quelle wartet der Eintrag auf einen neuen Versuch, statt abzustuerzen."""
+    er.async_get(hass).async_remove("calendar.quelle")
+    await hass.async_block_till_done()
+
+    assert eingerichtet.state is ConfigEntryState.SETUP_RETRY
+    assert "wurde entfernt" in caplog.text
