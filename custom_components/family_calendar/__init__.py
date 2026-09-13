@@ -84,16 +84,17 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 @callback
 def _async_remove_stale_devices(hass: HomeAssistant, entry: FamilyCalendarEntry) -> None:
-    """Loest Geraete vom Eintrag, die zu keiner Person gehoeren.
+    """Entfernt Geraete des Eintrags, die zu keiner Person gehoeren.
 
     Betrifft das gemeinsame Geraet aus der ersten Vorabversion. Geraete entfernter
     Personen raeumt Home Assistant beim Entfernen des Untereintrags selbst ab.
+    Ein Geraet gehoert genau einem Eintrag; es wird deshalb ganz entfernt.
     """
     registry = dr.async_get(hass)
     wanted = {(DOMAIN, subentry_id) for subentry_id in entry.subentries}
     for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
         if not device.identifiers & wanted:
-            registry.async_update_device(device.id, remove_config_entry_id=entry.entry_id)
+            registry.async_remove_device(device.id)
 
 
 @callback
