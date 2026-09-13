@@ -110,3 +110,89 @@ Personenkalender, dazu ein fremder Kalender mit eigener Farbe,
 |----|------|-----------|
 | R1 | Eintrag auf den echten Quellkalender, 90 Tage abfragen | Jede Personenliste deckt sich mit der Referenzregel. Protokolliert werden nur Anzahlen. |
 | R2 | Kalender-Ansicht auf die Personenkalender umstellen | Streifen und Farben wie in F2. |
+
+---
+
+## Durchlauf vom 13.09.2026, Home Assistant 2026.9.1
+
+Ausgefuehrt gegen die produktive Instanz (Raspberry Pi 4, HAOS 18.2) mit den
+Testkalendern `FK Test` und `FK Test Zwei` und dem Dashboard `fk-test`.
+Abschnitt R lesend gegen den echten Familienkalender.
+
+| Bereich | Ergebnis |
+|---------|----------|
+| A Installation | bestanden |
+| B Einrichtung | B1 zunaechst fehlgeschlagen (Issue 1), nach der Behebung bestanden; B2 ueber die Komponententests; uebrige bestanden |
+| C Zuordnung | bestanden |
+| D Personen | bestanden |
+| E Optionen | E1 fehlgeschlagen (Issue 8), nach der Behebung bestanden; E3 bestanden |
+| F Dashboard | F2 mit Befund (Issue 7), nach der Behebung bestanden; uebrige bestanden |
+| G Robustheit | G2 mit Warnung (Issue 6), nach der Behebung bestanden; G4 abgewandelt, siehe unten; uebrige bestanden |
+| R Echter Kalender | bestanden |
+
+Im Einzelnen:
+
+* **B1** Mit vier Personen entstand nur `calendar.fk_test_dora`. Alle
+  Personenkalender meldeten dasselbe Geraet, Home Assistant verschob es von
+  Person zu Person. Seit dem eigenen Geraet je Person entstehen alle vier
+  Kalender mit Kuerzel, Farbe und dem richtigen naechsten Termin.
+* **B3 bis B6** Vergebenes Kuerzel in anderer Schreibweise, leerer Name mit
+  Kuerzel `AB`, Personenkalender als Quelle, bereits eingerichtete Quelle --
+  jeweils mit der vorgesehenen Meldung abgelehnt.
+* **C1** Von 64 Kombinations-Terminen sieht jede Person genau die 49 mit ihrem
+  Buchstaben. Von den 15 Terminen der Anzeigewoche sehen Anna 10, Ben 10,
+  Carla 9 und Dora 10 -- keiner fehlt, keiner zu viel.
+* **C2** `Sommerfest`, `Alle Grillen`, `AA Tippfehler`, `AX Fremd` und
+  `F-Jugend Turnier` sehen alle vier.
+* **C3** `C Yoga` mit Ort `B-Strasse 5` und Beschreibung `D bitte abholen`
+  sieht nur Carla.
+* **C4** Die dreitaegige, ganztaegige `D Klassenfahrt` sieht nur Dora.
+* **C6** `B Zustandstest` 16:35 bis 16:37: Ben wechselt um 16:35:00 auf `on`
+  und um 16:37:00 auf `off`, Anna bleibt `off`.
+* **C7** Ein neu angelegter Termin steht sofort im Zustand des Personenkalenders
+  und auf der Karte.
+* **D1** `E Werkstatt` betrifft zunaechst alle; nach dem Anlegen von Emil (`E`)
+  nur noch ihn.
+* **D2** Eine geaenderte Farbe steht im Attribut, in der Kalenderoption der
+  Entity und in der Karte.
+* **D3** Nach dem Entfernen von Emil verschwindet sein Kalender, `E Werkstatt`
+  betrifft wieder alle.
+* **E1** Die neue Quelle stand in den Optionen, die Kalender lieferten aber die
+  Termine der alten. Der Options-Flow hatte vor dem Speichern die `unique_id`
+  geaendert und damit ein Neuladen mit den alten Optionen ausgeloest. Nach der
+  Behebung greift der Wechsel ohne Neuladen von Hand.
+* **E3** Bei abgeschaltetem Abgleich behaelt die Karte die alte Farbe; nach dem
+  Einschalten uebernimmt sie die aktuelle.
+* **F2** Einzeltermine einfarbig, `CD Zahnarzt` zweifarbig, `cab Schwimmbad`
+  dreifarbig, Termine ohne Kuerzel vierfarbig gestreift. Befund: Jedes Personen-
+  Chip trug das Initial *F* und den vollen Geraetenamen. Seit Issue 7 traegt der
+  Abgleich den Personennamen ein, wo die Karte keinen hat.
+* **F3** Eine nachtraeglich gespeicherte Karte *Nur Ben* bekommt Farbe und Namen
+  innerhalb weniger Sekunden.
+* **F4** Farbe und Name des fremden Kalenders bleiben unberuehrt.
+* **G2** Nach dem Neustart meldete Home Assistant den veralteten Aufruf
+  `async_update_device(remove_config_entry_id=...)`. Seit der Behebung keine
+  Meldung der Integration mehr.
+* **G3** Nach dem Umbenennen der Quelle folgt der Eintrag, die Kalender liefern
+  weiter.
+* **G4** Mit den verfuegbaren Werkzeugen liess sich die Quelle nur
+  **deaktivieren**, nicht aus der Registry entfernen. Ergebnis: Der
+  Personenkalender wird sofort `unavailable`, im Protokoll steht genau eine
+  Fehlermeldung des Coordinators, nach dem Reaktivieren ist er ohne Eingriff
+  wieder verfuegbar. Das vollstaendige Entfernen deckt der Komponententest
+  `test_entfernte_quelle` ab.
+* **R1** Ein Monat echter Familienkalender: Die vier Personenkalender enthalten
+  zusammen 33 Termine aus 29 Quellterminen -- genau die Zuordnung der
+  Kuerzelregel, zwei Termine mit `CF` und einer mit `ECA` zaehlen mehrfach.
+* **R2** Die Kalender-Ansicht zeigt die vier Personen mit eigenem Initial und
+  eigener Farbe, Termine mehrerer Personen gestreift.
+
+Issues aus diesem Durchlauf:
+[1](https://github.com/DaFlouw/familycalender/issues/1),
+[2](https://github.com/DaFlouw/familycalender/issues/2),
+[3](https://github.com/DaFlouw/familycalender/issues/3),
+[4](https://github.com/DaFlouw/familycalender/issues/4),
+[5](https://github.com/DaFlouw/familycalender/issues/5),
+[6](https://github.com/DaFlouw/familycalender/issues/6),
+[7](https://github.com/DaFlouw/familycalender/issues/7),
+[8](https://github.com/DaFlouw/familycalender/issues/8) -- alle behoben.
