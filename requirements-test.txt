@@ -1,0 +1,9 @@
+# Stufe 2: Home-Assistant-Komponententests. Laeuft nur unter Linux/CI,
+# weil Home Assistant fcntl importiert und damit nicht unter Windows startet.
+# Die Version muss zur Ziel-Home-Assistant-Version passen (aktuell 2026.9.x).
+-r requirements-dev.txt
+pytest-homeassistant-custom-component
+
+# Der Farbabgleich laedt fuer seine Tests die Lovelace-Komponente; deren
+# Abhaengigkeiten importieren hass_frontend, das das Testpaket nicht mitbringt.
+home-assistant-frontend

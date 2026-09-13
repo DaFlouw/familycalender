@@ -1,0 +1,115 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family calendar",
+        "description": "Choose the calendar whose event titles start with the initials of the people concerned. Every person gets a calendar of their own.",
+        "data": {
+          "name": "Name",
+          "source_calendar": "Source calendar"
+        },
+        "data_description": {
+          "name": "Name of the device that groups the person calendars.",
+          "source_calendar": "The calendar whose events are split up. It stays unchanged."
+        }
+      },
+      "person": {
+        "title": "Add person",
+        "description": "Already added: {persons}",
+        "data": {
+          "name": "Name",
+          "letter": "Initial",
+          "color": "Color"
+        },
+        "data_description": {
+          "name": "Shown as the name of the person's calendar.",
+          "letter": "The letter that marks this person's events, e.g. F in \"F Dentist\" or \"CF Parents' evening\".",
+          "color": "Color of this person's events. Events of several people appear striped."
+        }
+      },
+      "more": {
+        "title": "People",
+        "description": "Already added: {persons}",
+        "menu_options": {
+          "person": "Add another person",
+          "finish": "Finish"
+        }
+      }
+    },
+    "error": {
+      "source_not_found": "This calendar does not exist.",
+      "source_is_family_calendar": "A person calendar cannot be a source calendar.",
+      "name_required": "Please enter a name.",
+      "invalid_letter": "The initial must be a single letter.",
+      "letter_taken": "This initial is already used by another person."
+    },
+    "abort": {
+      "already_configured": "This calendar is already set up."
+    }
+  },
+  "config_subentries": {
+    "person": {
+      "entry_type": "Person",
+      "initiate_flow": {
+        "user": "Add person",
+        "reconfigure": "Edit person"
+      },
+      "step": {
+        "user": {
+          "title": "Add person",
+          "data": {
+            "name": "Name",
+            "letter": "Initial",
+            "color": "Color"
+          },
+          "data_description": {
+            "name": "Shown as the name of the person's calendar.",
+            "letter": "The letter that marks this person's events, e.g. F in \"F Dentist\" or \"CF Parents' evening\".",
+            "color": "Color of this person's events. Events of several people appear striped."
+          }
+        },
+        "reconfigure": {
+          "title": "Edit person",
+          "data": {
+            "name": "Name",
+            "letter": "Initial",
+            "color": "Color"
+          },
+          "data_description": {
+            "name": "Shown as the name of the person's calendar.",
+            "letter": "The letter that marks this person's events, e.g. F in \"F Dentist\" or \"CF Parents' evening\".",
+            "color": "Color of this person's events. Events of several people appear striped."
+          }
+        }
+      },
+      "error": {
+        "name_required": "Please enter a name.",
+        "invalid_letter": "The initial must be a single letter.",
+        "letter_taken": "This initial is already used by another person."
+      },
+      "abort": {
+        "reconfigure_successful": "The person was updated."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Family calendar",
+        "data": {
+          "source_calendar": "Source calendar",
+          "sync_dashboards": "Write colors into dashboards"
+        },
+        "data_description": {
+          "source_calendar": "The calendar whose events are split up.",
+          "sync_dashboards": "Writes the person colors into every Daylight Calendar Card that shows these calendars. Only the colors of these calendars are changed."
+        }
+      }
+    },
+    "error": {
+      "source_not_found": "This calendar does not exist.",
+      "source_is_family_calendar": "A person calendar cannot be a source calendar.",
+      "already_configured": "This calendar is already set up in another entry."
+    }
+  }
+}

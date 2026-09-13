@@ -1,0 +1,115 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Familienkalender",
+        "description": "Wähle den Kalender, dessen Termintitel mit den Kürzeln der betroffenen Personen beginnen. Jede Person bekommt einen eigenen Kalender.",
+        "data": {
+          "name": "Name",
+          "source_calendar": "Quellkalender"
+        },
+        "data_description": {
+          "name": "Name des Geräts, unter dem die Personenkalender stehen.",
+          "source_calendar": "Der Kalender, dessen Termine aufgeteilt werden. Er bleibt unverändert."
+        }
+      },
+      "person": {
+        "title": "Person hinzufügen",
+        "description": "Bereits angelegt: {persons}",
+        "data": {
+          "name": "Name",
+          "letter": "Kürzel",
+          "color": "Farbe"
+        },
+        "data_description": {
+          "name": "Erscheint als Name des Personenkalenders.",
+          "letter": "Der Buchstabe, der die Termine dieser Person kennzeichnet, etwa F in „F Zahnarzt“ oder „CF Elternabend“.",
+          "color": "Farbe der Termine dieser Person. Termine mehrerer Personen erscheinen gestreift."
+        }
+      },
+      "more": {
+        "title": "Personen",
+        "description": "Bereits angelegt: {persons}",
+        "menu_options": {
+          "person": "Weitere Person hinzufügen",
+          "finish": "Fertig"
+        }
+      }
+    },
+    "error": {
+      "source_not_found": "Diesen Kalender gibt es nicht.",
+      "source_is_family_calendar": "Ein Personenkalender kann kein Quellkalender sein.",
+      "name_required": "Bitte einen Namen eingeben.",
+      "invalid_letter": "Das Kürzel muss ein einzelner Buchstabe sein.",
+      "letter_taken": "Dieses Kürzel hat bereits eine andere Person."
+    },
+    "abort": {
+      "already_configured": "Dieser Kalender ist bereits eingerichtet."
+    }
+  },
+  "config_subentries": {
+    "person": {
+      "entry_type": "Person",
+      "initiate_flow": {
+        "user": "Person hinzufügen",
+        "reconfigure": "Person bearbeiten"
+      },
+      "step": {
+        "user": {
+          "title": "Person hinzufügen",
+          "data": {
+            "name": "Name",
+            "letter": "Kürzel",
+            "color": "Farbe"
+          },
+          "data_description": {
+            "name": "Erscheint als Name des Personenkalenders.",
+            "letter": "Der Buchstabe, der die Termine dieser Person kennzeichnet, etwa F in „F Zahnarzt“ oder „CF Elternabend“.",
+            "color": "Farbe der Termine dieser Person. Termine mehrerer Personen erscheinen gestreift."
+          }
+        },
+        "reconfigure": {
+          "title": "Person bearbeiten",
+          "data": {
+            "name": "Name",
+            "letter": "Kürzel",
+            "color": "Farbe"
+          },
+          "data_description": {
+            "name": "Erscheint als Name des Personenkalenders.",
+            "letter": "Der Buchstabe, der die Termine dieser Person kennzeichnet, etwa F in „F Zahnarzt“ oder „CF Elternabend“.",
+            "color": "Farbe der Termine dieser Person. Termine mehrerer Personen erscheinen gestreift."
+          }
+        }
+      },
+      "error": {
+        "name_required": "Bitte einen Namen eingeben.",
+        "invalid_letter": "Das Kürzel muss ein einzelner Buchstabe sein.",
+        "letter_taken": "Dieses Kürzel hat bereits eine andere Person."
+      },
+      "abort": {
+        "reconfigure_successful": "Die Person wurde geändert."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Familienkalender",
+        "data": {
+          "source_calendar": "Quellkalender",
+          "sync_dashboards": "Farben in Dashboards eintragen"
+        },
+        "data_description": {
+          "source_calendar": "Der Kalender, dessen Termine aufgeteilt werden.",
+          "sync_dashboards": "Trägt die Personenfarben in jede Daylight Calendar Card ein, die diese Kalender zeigt. Geändert werden nur die Farben dieser Kalender."
+        }
+      }
+    },
+    "error": {
+      "source_not_found": "Diesen Kalender gibt es nicht.",
+      "source_is_family_calendar": "Ein Personenkalender kann kein Quellkalender sein.",
+      "already_configured": "Dieser Kalender ist bereits in einem anderen Eintrag eingerichtet."
+    }
+  }
+}

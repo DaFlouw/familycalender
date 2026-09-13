@@ -1,0 +1,81 @@
+name: Tests
+
+on:
+  push:
+    # Auch Arbeitszweige pruefen: sonst laeuft die CI erst, wenn der
+    # Pull Request schon offen ist, und Fehler fallen zu spaet auf.
+    branches: [main, "fix/**", "feat/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install ruff
+      - run: ruff check custom_components tests
+      - run: ruff format --check custom_components tests
+
+  unit:
+    name: Domaenentests (Stufe 1)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt
+      - run: pytest tests/unit
+
+  integration:
+    name: Komponententests (Stufe 2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Home Assistant 2026.9 setzt Python 3.14 voraus.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements-test.txt
+      # Die Ausgabe wird zusaetzlich als Annotation gemeldet: Job-Logs sind nur
+      # mit Anmeldung abrufbar, Annotationen dagegen oeffentlich lesbar.
+      - name: Komponententests
+        run: |
+          if pytest tests/integration -q --tb=line -rf -p no:cacheprovider > pytest.log 2>&1; then
+            cat pytest.log
+          else
+            cat pytest.log
+            # Gezielt die Zusammenfassung melden; der rohe Mitschnitt besteht
+            # groesstenteils aus Home-Assistant-Logzeilen.
+            {
+              grep -E '^E  ' pytest.log | sort -u | head -n 15
+              sed -n '/short test summary info/,$p' pytest.log
+            } | head -n 40 | while IFS= read -r zeile; do
+              echo "::error::$zeile"
+            done
+            exit 1
+          fi
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS-Validierung
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # Die Marken-Pruefung verlangt einen Eintrag in home-assistant/brands,
+          # den es fuer eine neue eigene Integration nicht gibt.
+          ignore: brands

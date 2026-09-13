@@ -1,0 +1,14 @@
+{
+  "domain": "family_calendar",
+  "name": "Familienkalender",
+  "after_dependencies": ["lovelace"],
+  "codeowners": ["@DaFlouw"],
+  "config_flow": true,
+  "dependencies": ["calendar"],
+  "documentation": "https://github.com/DaFlouw/familycalender",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/DaFlouw/familycalender/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
