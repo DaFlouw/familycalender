@@ -1,4 +1,4 @@
-"""Farbabgleich mit Daylight-Calendar-Karten."""
+"""Farb- und Namensabgleich mit Daylight-Calendar-Karten."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from .conftest import PERSONEN, QuellKalender, entity_id_von, neuer_eintrag
 MUELL = {"calendar.muell": "#a1a1a1"}
 
 
-def _dashboard(*entities: str) -> dict[str, Any]:
+def _dashboard(*entities: str, **felder: Any) -> dict[str, Any]:
     return {
         "views": [
             {
@@ -37,6 +37,7 @@ def _dashboard(*entities: str) -> dict[str, Any]:
                                 "type": "custom:daylight-calendar-card",
                                 "entities": ["calendar.muell", *entities],
                                 "colors": dict(MUELL),
+                                **felder,
                             }
                         ],
                     }
@@ -46,8 +47,8 @@ def _dashboard(*entities: str) -> dict[str, Any]:
     }
 
 
-def _farben(config: dict[str, Any]) -> dict[str, str]:
-    return config["views"][0]["sections"][0]["cards"][0]["colors"]
+def _karte(config: dict[str, Any]) -> dict[str, Any]:
+    return config["views"][0]["sections"][0]["cards"][0]
 
 
 @pytest.fixture
@@ -72,7 +73,7 @@ async def _einrichten(hass: HomeAssistant, *, abgleich: bool) -> MockConfigEntry
     return eintrag
 
 
-async def test_farben_werden_beim_start_eingetragen(
+async def test_farben_und_namen_werden_beim_start_eingetragen(
     hass: HomeAssistant,
     quelle: QuellKalender,
     lovelace: LovelaceStorage,
@@ -83,10 +84,30 @@ async def test_farben_werden_beim_start_eingetragen(
     await _einrichten(hass, abgleich=True)
     await _warte_auf_abgleich(hass, freezer)
 
-    assert _farben(await lovelace.async_load(False)) == {
+    karte = _karte(await lovelace.async_load(False))
+    assert karte["colors"] == {
         **MUELL,
         entity_id_von("Anna"): rgb_to_hex(PERSONEN[0][2]),
         entity_id_von("Ben"): rgb_to_hex(PERSONEN[1][2]),
+    }
+    assert karte["calendar_names"] == {entity_id_von("Anna"): "Anna", entity_id_von("Ben"): "Ben"}
+
+
+async def test_vorhandener_name_bleibt_stehen(
+    hass: HomeAssistant,
+    quelle: QuellKalender,
+    lovelace: LovelaceStorage,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    await lovelace.async_save(
+        _dashboard(entity_id_von("Anna"), calendar_names={entity_id_von("Anna"): "Mama"})
+    )
+
+    await _einrichten(hass, abgleich=True)
+    await _warte_auf_abgleich(hass, freezer)
+
+    assert _karte(await lovelace.async_load(False))["calendar_names"] == {
+        entity_id_von("Anna"): "Mama"
     }
 
 
@@ -102,7 +123,7 @@ async def test_neue_karte_bekommt_farben(
     await lovelace.async_save(_dashboard(entity_id_von("Carla")))
     await _warte_auf_abgleich(hass, freezer)
 
-    assert _farben(await lovelace.async_load(False)) == {
+    assert _karte(await lovelace.async_load(False))["colors"] == {
         **MUELL,
         entity_id_von("Carla"): rgb_to_hex(PERSONEN[2][2]),
     }
@@ -124,7 +145,7 @@ async def test_farbaenderung_erreicht_die_karte(
     )
     await _warte_auf_abgleich(hass, freezer)
 
-    assert _farben(await lovelace.async_load(False))[entity_id_von("Anna")] == "#0a141e"
+    assert _karte(await lovelace.async_load(False))["colors"][entity_id_von("Anna")] == "#0a141e"
 
 
 async def test_ohne_abgleich_bleibt_das_dashboard_unberuehrt(
@@ -138,4 +159,6 @@ async def test_ohne_abgleich_bleibt_das_dashboard_unberuehrt(
     await _einrichten(hass, abgleich=False)
     await _warte_auf_abgleich(hass, freezer)
 
-    assert _farben(await lovelace.async_load(False)) == MUELL
+    karte = _karte(await lovelace.async_load(False))
+    assert karte["colors"] == MUELL
+    assert "calendar_names" not in karte

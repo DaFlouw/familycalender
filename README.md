@@ -142,6 +142,8 @@ Die Farbe landet an drei Stellen:
 | Kalenderoption der Entity | Farbe im Kalender-Panel von Home Assistant |
 | `colors` jeder Daylight Calendar Card, die den Kalender zeigt | Farbe und Streifen auf dem Dashboard |
 
+Zusaetzlich traegt der Abgleich den **Namen der Person** als Anzeigenamen in die Karte ein (`calendar_names`), sofern dort fuer diesen Kalender noch keiner steht. Ohne ihn zeigte die Karte bei jeder Person den vollen Entity-Namen — `Familienkalender Anna`, `Familienkalender Ben` — und damit bei allen dasselbe Initial. Ein von Hand vergebener Name bleibt stehen.
+
 Der Abgleich mit den Karten laeuft beim Start, nach jeder Aenderung an den Personen und nach jedem Speichern eines Dashboards. So bekommt auch eine neu angelegte Karte die Farben, ohne dass man sie von Hand eintraegt.
 
 > [!NOTE]

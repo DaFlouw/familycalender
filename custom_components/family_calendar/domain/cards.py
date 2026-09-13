@@ -78,3 +78,36 @@ def apply_colors(config: Any, colors: Mapping[str, str]) -> int:
             card["colors"] = card_colors
             changed += changed_here
     return changed
+
+
+def apply_names(config: Any, names: Mapping[str, str]) -> int:
+    """Traegt Anzeigenamen ein, wo eine Daylight-Karte noch keinen hat.
+
+    Ohne Eintrag in ``calendar_names`` zeigt die Karte den Namen der Entity. Bei
+    Personenkalendern beginnt er immer mit dem Namen des Eintrags, und alle
+    Personen bekaemen dasselbe Initial. Ein vorhandener Name wird nie
+    ueberschrieben: er kann bewusst so gewaehlt sein.
+    """
+    changed = 0
+    for card in iter_cards(config):
+        if card.get("type") != DAYLIGHT_CARD_TYPE:
+            continue
+
+        shown = card_entity_ids(card) & names.keys()
+        if not shown:
+            continue
+
+        card_names = card.get("calendar_names")
+        if not isinstance(card_names, dict):
+            card_names = {}
+
+        changed_here = 0
+        for entity_id in sorted(shown):
+            if not str(card_names.get(entity_id) or "").strip():
+                card_names[entity_id] = names[entity_id]
+                changed_here += 1
+
+        if changed_here:
+            card["calendar_names"] = card_names
+            changed += changed_here
+    return changed

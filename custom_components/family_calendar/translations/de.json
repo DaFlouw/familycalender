@@ -102,7 +102,7 @@
         },
         "data_description": {
           "source_calendar": "Der Kalender, dessen Termine aufgeteilt werden.",
-          "sync_dashboards": "Trägt die Personenfarben in jede Daylight Calendar Card ein, die diese Kalender zeigt. Geändert werden nur die Farben dieser Kalender."
+          "sync_dashboards": "Trägt die Personenfarben – und, wo noch keiner steht, die Namen – in jede Daylight Calendar Card ein, die diese Kalender zeigt. Sonst wird an den Dashboards nichts geändert."
         }
       }
     },
