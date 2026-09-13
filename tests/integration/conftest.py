@@ -103,7 +103,10 @@ def termine_ab(jetzt: datetime) -> list[CalendarEvent]:
             start=start, end=start + timedelta(hours=dauer), summary=titel, **felder
         )
 
-    morgen = jetzt.date() + timedelta(days=1)
+    # Uebermorgen statt morgen: Die Testumgebung rechnet in US/Pacific, wo der
+    # Bezugszeitpunkt schon spaet am Abend liegt. Ein ganztaegiger Termin
+    # "morgen" begaenne dann vor allen anderen Terminen des Tests.
+    uebermorgen = jetzt.date() + timedelta(days=2)
     return [
         # Ort und Beschreibung sind fuer die Zuordnung ohne Bedeutung.
         termin(1, 1, "A Zahnarzt", location="B-Strasse 5"),
@@ -112,7 +115,9 @@ def termine_ab(jetzt: datetime) -> list[CalendarEvent]:
         termin(4, 1, "Sommerfest"),
         termin(5, 1, "AA Tippfehler"),
         termin(6, 1, "C Sport", description="D bitte abholen"),
-        CalendarEvent(start=morgen, end=morgen + timedelta(days=2), summary="D Klassenfahrt"),
+        CalendarEvent(
+            start=uebermorgen, end=uebermorgen + timedelta(days=2), summary="D Klassenfahrt"
+        ),
         termin(-3, 1, "A vorbei"),
     ]
 
