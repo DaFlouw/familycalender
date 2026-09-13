@@ -30,7 +30,9 @@ async def test_quelle_wechseln(hass: HomeAssistant, eingerichtet: MockConfigEntr
 
     zweite_id = registry_id(hass, "calendar.zweite_quelle")
     assert eingerichtet.options == {CONF_SOURCE: zweite_id, CONF_SYNC_DASHBOARDS: True}
-    assert eingerichtet.unique_id == zweite_id
+    # Jede weitere Aenderung am Eintrag loeste ein Neuladen mit den alten
+    # Optionen aus und verschluckte das fuer die neuen (Issue 8).
+    assert eingerichtet.unique_id == registry_id(hass, "calendar.quelle")
     assert eingerichtet.state is ConfigEntryState.LOADED
 
     # Die zweite Quelle hat keine Termine.

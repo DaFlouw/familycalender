@@ -64,9 +64,9 @@ class FamilyCalendarConfigFlow(ConfigFlow, domain=DOMAIN):
             source, error = validate_source(self.hass, user_input[CONF_SOURCE])
             if error:
                 errors[CONF_SOURCE] = error
+            elif source_in_use(self.hass, source):
+                return self.async_abort(reason="already_configured")
             else:
-                await self.async_set_unique_id(source)
-                self._abort_if_unique_id_configured()
                 self._title = str(user_input.get(CONF_NAME, "")).strip() or DEFAULT_TITLE
                 self._source = source
                 return await self.async_step_person()
@@ -147,16 +147,14 @@ class FamilyCalendarOptionsFlow(OptionsFlow):
 
         if user_input is not None:
             source, error = validate_source(self.hass, user_input[CONF_SOURCE])
-            if error is None and any(
-                other.entry_id != entry.entry_id and other.unique_id == source
-                for other in self.hass.config_entries.async_entries(DOMAIN)
-            ):
+            if error is None and source_in_use(self.hass, source, except_entry_id=entry.entry_id):
                 error = "already_configured"
             if error:
                 errors[CONF_SOURCE] = error
             else:
-                if entry.unique_id != source:
-                    self.hass.config_entries.async_update_entry(entry, unique_id=source)
+                # Nur die Optionen aendern, nichts sonst am Eintrag: Jede weitere
+                # Aenderung loest ein eigenes Neuladen aus, das die neuen Optionen
+                # noch nicht kennt und das Neuladen fuer die Optionen verschluckt.
                 return self.async_create_entry(
                     data={
                         CONF_SOURCE: source,
@@ -254,6 +252,23 @@ def validate_source(hass: HomeAssistant, entity_id: str) -> tuple[str, str | Non
     if registry_entry.platform == DOMAIN:
         return "", "source_is_family_calendar"
     return registry_entry.id, None
+
+
+def source_in_use(hass: HomeAssistant, source: str, *, except_entry_id: str | None = None) -> bool:
+    """Ob ein anderer Eintrag denselben Quellkalender aufteilt.
+
+    Verglichen werden die aufgeloesten Entity-IDs, damit Registry-ID und
+    Entity-ID derselben Quelle als gleich gelten. Die ``unique_id`` des Eintrags
+    wird dafuer bewusst nicht verwendet: Sie im Options-Flow nachzufuehren loest
+    ein zusaetzliches Neuladen mit den alten Optionen aus.
+    """
+    registry = er.async_get(hass)
+    wanted = er.async_resolve_entity_id(registry, source)
+    return any(
+        er.async_resolve_entity_id(registry, entry.options.get(CONF_SOURCE, "")) == wanted
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        if entry.entry_id != except_entry_id
+    )
 
 
 def validate_person(

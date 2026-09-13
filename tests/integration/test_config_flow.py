@@ -71,7 +71,6 @@ async def test_einrichtung_mit_zwei_personen(hass: HomeAssistant, quelle: QuellK
 
     eintrag = result["result"]
     quelle_id = registry_id(hass, "calendar.quelle")
-    assert eintrag.unique_id == quelle_id
     assert eintrag.options == {CONF_SOURCE: quelle_id, CONF_SYNC_DASHBOARDS: True}
 
     personen = {s.title: s for s in eintrag.subentries.values()}
@@ -123,3 +122,20 @@ async def test_ungueltige_person(hass: HomeAssistant, quelle: QuellKalender) -> 
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {CONF_NAME: "name_required", CONF_LETTER: "invalid_letter"}
+
+
+async def test_doppel_ohne_unique_id_wird_erkannt(
+    hass: HomeAssistant, quelle: QuellKalender
+) -> None:
+    """Massgeblich ist die Quelle in den Optionen, nicht die unique_id."""
+    MockConfigEntry(
+        domain=DOMAIN,
+        options={CONF_SOURCE: registry_id(hass, "calendar.quelle"), CONF_SYNC_DASHBOARDS: False},
+    ).add_to_hass(hass)
+
+    result = await _starte(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_NAME: "Nochmal", CONF_SOURCE: "calendar.quelle"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
