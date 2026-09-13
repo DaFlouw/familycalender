@@ -54,13 +54,17 @@ class PersonCalendarEntity(CoordinatorEntity[FamilyCalendarCoordinator], Calenda
         self.letter = normalize_letter(subentry.data[CONF_LETTER])
         self.color = rgb_to_hex(subentry.data[CONF_COLOR])
 
-        self._attr_name = subentry.title
+        # Der Kalender ist die Hauptfunktion seines Geraets und traegt dessen Namen.
+        self._attr_name = None
         self._attr_unique_id = f"{entry.entry_id}_{subentry.subentry_id}"
         self._attr_initial_color = self.color
         self._attr_extra_state_attributes = {"letter": self.letter, "color": self.color}
+        # Ein Geraet je Person: Home Assistant ordnet ein Geraet genau einem
+        # Untereintrag zu. Ein gemeinsames Geraet wird von Person zu Person
+        # weitergereicht, und nur der zuletzt angelegte Kalender bleibt erhalten.
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
+            identifiers={(DOMAIN, subentry.subentry_id)},
+            name=f"{entry.title} {subentry.title}",
             entry_type=DeviceEntryType.SERVICE,
             manufacturer="DaFlouw",
             model=DEFAULT_TITLE,

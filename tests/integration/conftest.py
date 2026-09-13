@@ -13,7 +13,6 @@ from collections.abc import Generator
 from datetime import datetime, timedelta
 
 import pytest
-from freezegun.api import FrozenDateTimeFactory
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigSubentryData
 from homeassistant.core import HomeAssistant
@@ -36,6 +35,9 @@ from custom_components.family_calendar.const import (
 )
 from custom_components.family_calendar.domain.colors import PALETTE
 
+#: Fester Bezugszeitpunkt aller Komponententests.
+JETZT = "2026-09-14 06:00:00+00:00"
+
 #: Name, Kuerzel, Farbe
 PERSONEN: list[tuple[str, str, list[int]]] = [
     ("Anna", "A", list(PALETTE[0])),
@@ -51,6 +53,17 @@ ERWARTET: dict[str, set[str]] = {
     "C": {"bc Schwimmen", "DCBA Ausflug", "Sommerfest", "AA Tippfehler", "C Sport"},
     "D": {"DCBA Ausflug", "Sommerfest", "AA Tippfehler", "D Klassenfahrt"},
 }
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Friert die Zeit ein, bevor irgendeine Fixture laeuft.
+
+    Die Zugriffstoken der Test-Clients gelten nur kurz. Wird die Zeit erst nach
+    ihrer Ausgabe vorgestellt, lehnt die HTTP-API sie als abgelaufen ab.
+    """
+    for item in items:
+        if "integration" in item.path.parts:
+            item.add_marker(pytest.mark.freeze_time(JETZT))
 
 
 def entity_id_von(name: str, geraet: str = "familienkalender") -> str:
@@ -123,9 +136,20 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> Generat
 
 
 @pytest.fixture
-async def quelle(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> QuellKalender:
+def expected_lingering_timers() -> bool:
+    """Zeitgeber der Kalender-Entities sind hier erwartet.
+
+    Jede Kalender-Entity plant ihren Zustandswechsel zu Beginn und Ende des
+    naechsten Termins. Die Testumgebung haelt Home Assistant an, ohne die
+    Entities zu entfernen; diese Zeitgeber bleiben deshalb stehen. Das betrifft
+    die Quellkalender des Tests ebenso und ist kein Leck der Integration.
+    """
+    return True
+
+
+@pytest.fixture
+async def quelle(hass: HomeAssistant) -> QuellKalender:
     """``calendar.quelle`` mit Terminen und ``calendar.zweite_quelle`` ohne."""
-    freezer.move_to("2026-09-14 06:00:00+00:00")
     kalender = QuellKalender("Quelle", "quelle_1")
     kalender.termine = termine_ab(dt_util.now())
     zweite = QuellKalender("Zweite Quelle", "quelle_2")
