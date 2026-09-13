@@ -42,22 +42,15 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install -r requirements-test.txt
-      # Die Ausgabe wird zusaetzlich als Annotation gemeldet: Job-Logs sind nur
-      # mit Anmeldung abrufbar, Annotationen dagegen oeffentlich lesbar.
+      # Fehlschlaege werden zusaetzlich als Annotationen gemeldet: Job-Logs sind
+      # nur mit Anmeldung abrufbar, Annotationen dagegen oeffentlich lesbar.
       - name: Komponententests
         run: |
-          if pytest tests/integration -q --tb=line -rf -p no:cacheprovider > pytest.log 2>&1; then
+          if pytest tests/integration -q --tb=short -rfE -p no:cacheprovider > pytest.log 2>&1; then
             cat pytest.log
           else
             cat pytest.log
-            # Gezielt die Zusammenfassung melden; der rohe Mitschnitt besteht
-            # groesstenteils aus Home-Assistant-Logzeilen.
-            {
-              grep -E '^E  ' pytest.log | sort -u | head -n 15
-              sed -n '/short test summary info/,$p' pytest.log
-            } | head -n 40 | while IFS= read -r zeile; do
-              echo "::error::$zeile"
-            done
+            python .github/scripts/pytest_annotations.py pytest.log
             exit 1
           fi
 
